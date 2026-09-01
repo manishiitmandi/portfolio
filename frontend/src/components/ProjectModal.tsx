@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, ExternalLink, Cpu, BarChart2, Layers } from 'lucide-react';
 import { GithubIcon } from './Icons';
+import { getFullAssetUrl } from '../api/client';
 import type { ProjectItem } from '../types';
 
 interface ProjectModalProps {
@@ -105,7 +106,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             </div>
           )}
 
-          {/* TAB 2: SYSTEM ARCHITECTURE PIPELINE */}
+          {/* TAB 2: SYSTEM ARCHITECTURE & PIPELINE */}
           {activeTab === 'architecture' && (
             <div className="space-y-5 animate-in fade-in duration-200">
               {/* Architecture Diagram Image (if uploaded/provided) */}
@@ -116,7 +117,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                       System Architecture Diagram
                     </span>
                     <a
-                      href={project.architecture_image_url}
+                      href={getFullAssetUrl(project.architecture_image_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-indigo-600 hover:underline flex items-center gap-1 font-mono font-semibold"
@@ -127,7 +128,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                   </div>
                   <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50/70 p-2.5 flex items-center justify-center">
                     <img
-                      src={project.architecture_image_url}
+                      src={getFullAssetUrl(project.architecture_image_url)}
                       alt={`${project.title} Architecture Pipeline`}
                       className="max-h-80 w-auto object-contain rounded-xl shadow-xs hover:scale-[1.01] transition-transform"
                     />
@@ -182,7 +183,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                       Visual Results & Output Verification
                     </span>
                     <a
-                      href={project.results_image_url}
+                      href={getFullAssetUrl(project.results_image_url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-indigo-600 hover:underline flex items-center gap-1 font-mono font-semibold"
@@ -193,7 +194,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                   </div>
                   <div className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-50/70 p-2.5 flex items-center justify-center">
                     <img
-                      src={project.results_image_url}
+                      src={getFullAssetUrl(project.results_image_url)}
                       alt={`${project.title} Results Output`}
                       className="max-h-80 w-auto object-contain rounded-xl shadow-xs hover:scale-[1.01] transition-transform"
                     />

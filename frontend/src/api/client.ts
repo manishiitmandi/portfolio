@@ -10,9 +10,26 @@ import type {
   TerminalCommandResponse,
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_URL
+const PROD_BACKEND_URL = 'https://manish-portfolio-api-j8jt.onrender.com';
+
+export const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
-  : '/api';
+  : import.meta.env.PROD
+    ? `${PROD_BACKEND_URL}/api`
+    : '/api';
+
+export const STATIC_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}`
+  : import.meta.env.PROD
+    ? PROD_BACKEND_URL
+    : '';
+
+export const getFullAssetUrl = (url: string | undefined): string => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/static/')) return `${STATIC_BASE}${url}`;
+  return url;
+};
 
 export const apiClient = {
   // Public Endpoints
