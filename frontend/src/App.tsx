@@ -19,16 +19,22 @@ import type {
   ProjectItem,
   EducationItem,
 } from './types';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+
+import {
+  fallbackProfile,
+  fallbackProjects,
+  fallbackSkills,
+  fallbackExperience,
+  fallbackEducation,
+} from './data/fallbackData';
 
 export const App: React.FC = () => {
-  // State for data
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [skills, setSkills] = useState<SkillCategory[]>([]);
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
-  const [experience, setExperience] = useState<ExperienceItem[]>([]);
-  const [education, setEducation] = useState<EducationItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // State for data initialized with fallback data for 100% uptime
+  const [profile, setProfile] = useState<Profile>(fallbackProfile);
+  const [skills, setSkills] = useState<SkillCategory[]>(fallbackSkills);
+  const [projects, setProjects] = useState<ProjectItem[]>(fallbackProjects);
+  const [experience, setExperience] = useState<ExperienceItem[]>(fallbackExperience);
+  const [education, setEducation] = useState<EducationItem[]>(fallbackEducation);
 
   // Modal states
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -42,8 +48,6 @@ export const App: React.FC = () => {
   // Fetch all portfolio data
   const loadPortfolioData = async () => {
     try {
-      setError(null);
-
       const [pData, sData, prData, eData, edData] = await Promise.all([
         apiClient.getProfile(),
         apiClient.getSkills(),
@@ -52,14 +56,13 @@ export const App: React.FC = () => {
         apiClient.getEducation(),
       ]);
 
-      setProfile(pData);
-      setSkills(sData);
-      setProjects(prData);
-      setExperience(eData);
-      setEducation(edData);
+      if (pData) setProfile(pData);
+      if (sData && sData.length > 0) setSkills(sData);
+      if (prData && prData.length > 0) setProjects(prData);
+      if (eData && eData.length > 0) setExperience(eData);
+      if (edData && edData.length > 0) setEducation(edData);
     } catch (err: any) {
-      console.error('Failed to load portfolio data:', err);
-      setError(err.message || 'Could not connect to FastAPI backend');
+      console.warn('Backend cold-starting or connecting in background:', err.message);
     }
   };
 
@@ -116,37 +119,16 @@ export const App: React.FC = () => {
 
       {/* Main Content */}
       <main>
-        {error ? (
-          <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
-            <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-rose-300 max-w-md">
-              <AlertTriangle className="w-8 h-8 mx-auto mb-3 text-rose-400" />
-              <h3 className="text-lg font-heading font-bold text-white mb-1">
-                Backend Connection Error
-              </h3>
-              <p className="text-xs text-slate-400 mb-4">{error}</p>
-              <button
-                onClick={loadPortfolioData}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold mx-auto text-cyan-300"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Retry Connection</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <Hero
-              profile={profile}
-              onOpenResume={() => setIsResumeOpen(true)}
-              onOpenTerminal={() => setIsTerminalOpen(true)}
-            />
-            <About profile={profile} />
-            <Experience experience={experience} />
-            <Projects projects={projects} />
-            <Skills skills={skills} />
-            <Contact profile={profile} />
-          </>
-        )}
+        <Hero
+          profile={profile}
+          onOpenResume={() => setIsResumeOpen(true)}
+          onOpenTerminal={() => setIsTerminalOpen(true)}
+        />
+        <About profile={profile} />
+        <Experience experience={experience} />
+        <Projects projects={projects} />
+        <Skills skills={skills} />
+        <Contact profile={profile} />
       </main>
 
       {/* Footer */}
