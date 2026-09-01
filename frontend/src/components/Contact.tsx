@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react';
-import { GithubIcon, LinkedinIcon, LeetCodeIcon } from './Icons';
+import { GithubIcon, LinkedinIcon, LeetCodeIcon, CodeforcesIcon } from './Icons';
 import confetti from 'canvas-confetti';
 import { apiClient } from '../api/client';
 import type { Profile } from '../types';
@@ -165,9 +165,20 @@ export const Contact: React.FC<ContactProps> = ({ profile }) => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 hover:border-amber-500 transition-all shadow-sm"
-                      title="LeetCode"
+                      title="LeetCode Profile"
                     >
                       <LeetCodeIcon className="w-5 h-5" />
+                    </a>
+                  )}
+                  {socials.codeforces && (
+                    <a
+                      href={socials.codeforces}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 hover:border-blue-500 transition-all shadow-sm"
+                      title="Codeforces Profile"
+                    >
+                      <CodeforcesIcon className="w-5 h-5" colored={true} />
                     </a>
                   )}
                 </div>

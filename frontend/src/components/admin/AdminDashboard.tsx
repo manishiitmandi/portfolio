@@ -349,6 +349,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-600 mb-1">Avatar Image (URL or Upload)</label>
+                  <div className="flex items-center gap-3">
+                    {/* Live Avatar Preview Thumbnail */}
+                    <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-300 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
+                      <img
+                        src={profile.avatar_url || '/avatar.jpg'}
+                        alt="Avatar Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/avatar.jpg';
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        type="text"
+                        value={profile.avatar_url || ''}
+                        onChange={(e) => setProfile({ ...profile, avatar_url: e.target.value })}
+                        placeholder="/static/avatar.jpg or https://..."
+                        className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-sm focus:bg-white focus:border-indigo-500 outline-none"
+                      />
+                      <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center gap-1.5 transition-colors border border-indigo-200">
+                        <span>Upload Avatar</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              showToast('Uploading avatar...');
+                              const res = await apiClient.uploadImage(file, token);
+                              setProfile({ ...profile, avatar_url: res.image_url });
+                              showToast('Avatar image uploaded!');
+                            } catch (err: any) {
+                              showToast(err.message || 'Upload failed', 'error');
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-3 pt-2">
                   <input
                     type="checkbox"
@@ -373,7 +419,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="block text-xs font-mono font-bold text-slate-600 mb-1">Email</label>
                     <input
                       type="text"
-                      value={profile.socials.email}
+                      value={profile.socials.email || ''}
                       onChange={(e) =>
                         setProfile({
                           ...profile,
@@ -387,7 +433,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="block text-xs font-mono font-bold text-slate-600 mb-1">Phone</label>
                     <input
                       type="text"
-                      value={profile.socials.phone}
+                      value={profile.socials.phone || ''}
                       onChange={(e) =>
                         setProfile({
                           ...profile,
@@ -401,7 +447,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="block text-xs font-mono font-bold text-slate-600 mb-1">GitHub URL</label>
                     <input
                       type="text"
-                      value={profile.socials.github}
+                      value={profile.socials.github || ''}
                       onChange={(e) =>
                         setProfile({
                           ...profile,
@@ -415,11 +461,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="block text-xs font-mono font-bold text-slate-600 mb-1">LinkedIn URL</label>
                     <input
                       type="text"
-                      value={profile.socials.linkedin}
+                      value={profile.socials.linkedin || ''}
                       onChange={(e) =>
                         setProfile({
                           ...profile,
                           socials: { ...profile.socials, linkedin: e.target.value },
+                        })
+                      }
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-600 mb-1">LeetCode URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://leetcode.com/u/your_username"
+                      value={profile.socials.leetcode || ''}
+                      onChange={(e) =>
+                        setProfile({
+                          ...profile,
+                          socials: { ...profile.socials, leetcode: e.target.value },
+                        })
+                      }
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-600 mb-1">Codeforces URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://codeforces.com/profile/your_username"
+                      value={profile.socials.codeforces || ''}
+                      onChange={(e) =>
+                        setProfile({
+                          ...profile,
+                          socials: { ...profile.socials, codeforces: e.target.value },
                         })
                       }
                       className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-sm"
@@ -703,6 +779,97 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           placeholder="https://..."
                           className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-sm"
                         />
+                      </div>
+                    </div>
+
+                    {/* Image Attachments: Architecture Diagram & Results Visual */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-mono font-bold text-slate-700">
+                            Architecture Diagram (URL or Upload)
+                          </label>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editingProject?.architecture_image_url || ''}
+                            onChange={(e) =>
+                              setEditingProject({ ...(editingProject as any), architecture_image_url: e.target.value })
+                            }
+                            placeholder="https://... or /static/uploads/..."
+                            className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
+                          />
+                          <label className="cursor-pointer px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs flex items-center gap-1 transition-colors">
+                            <span>Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                try {
+                                  showToast('Uploading architecture diagram...');
+                                  const res = await apiClient.uploadImage(file, token);
+                                  setEditingProject({ ...(editingProject as any), architecture_image_url: res.image_url });
+                                  showToast('Diagram uploaded successfully!');
+                                } catch (err: any) {
+                                  showToast(err.message || 'Upload failed', 'error');
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                        {editingProject?.architecture_image_url && (
+                          <span className="text-[10px] font-mono text-emerald-700 mt-1 block">
+                            ✓ Attached: {editingProject.architecture_image_url}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-mono font-bold text-slate-700">
+                            Results / Metrics Visual (URL or Upload)
+                          </label>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editingProject?.results_image_url || ''}
+                            onChange={(e) =>
+                              setEditingProject({ ...(editingProject as any), results_image_url: e.target.value })
+                            }
+                            placeholder="https://... or /static/uploads/..."
+                            className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
+                          />
+                          <label className="cursor-pointer px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs flex items-center gap-1 transition-colors">
+                            <span>Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                try {
+                                  showToast('Uploading results image...');
+                                  const res = await apiClient.uploadImage(file, token);
+                                  setEditingProject({ ...(editingProject as any), results_image_url: res.image_url });
+                                  showToast('Result image uploaded successfully!');
+                                } catch (err: any) {
+                                  showToast(err.message || 'Upload failed', 'error');
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+                        {editingProject?.results_image_url && (
+                          <span className="text-[10px] font-mono text-emerald-700 mt-1 block">
+                            ✓ Attached: {editingProject.results_image_url}
+                          </span>
+                        )}
                       </div>
                     </div>
 

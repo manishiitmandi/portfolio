@@ -155,6 +155,8 @@ def create_project(
         demo_url=project.demo_url or "",
         featured=project.featured,
         architecture=project.architecture or [],
+        architecture_image_url=project.architecture_image_url or "",
+        results_image_url=project.results_image_url or "",
         created_date=project.created_date or "",
     )
     db.add(db_proj)
@@ -183,6 +185,8 @@ def update_project(
     p.demo_url = updated_project.demo_url or ""
     p.featured = updated_project.featured
     p.architecture = updated_project.architecture or []
+    p.architecture_image_url = updated_project.architecture_image_url or ""
+    p.results_image_url = updated_project.results_image_url or ""
     p.created_date = updated_project.created_date or ""
 
     db.commit()
@@ -333,3 +337,29 @@ async def upload_resume(
     with open(STATIC_RESUME_PATH, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     return {"success": True, "message": "Resume PDF updated successfully"}
+
+
+# --- General Image Upload (Diagrams & Results) ---
+@router.post("/upload-image")
+async def upload_image(
+    file: UploadFile = File(...),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
+    ext = Path(file.filename).suffix.lower()
+    if ext not in [".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif"]:
+        raise HTTPException(status_code=400, detail="Only image files (.png, .jpg, .jpeg, .webp, .svg, .gif) are allowed")
+    
+    uploads_dir = STATIC_DIR / "uploads"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"img_{uuid.uuid4().hex[:12]}{ext}"
+    dest_path = uploads_dir / filename
+    
+    with open(dest_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {
+        "success": True,
+        "image_url": f"/static/uploads/{filename}",
+        "message": "Image uploaded successfully",
+    }
+

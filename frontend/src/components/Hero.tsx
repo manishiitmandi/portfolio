@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowRight,
   Download,
-  Mail,
   Terminal,
   Cpu,
   Award,
   Zap,
+  Check,
+  Copy,
 } from 'lucide-react';
-import { GithubIcon, LinkedinIcon, LeetCodeIcon } from './Icons';
+import { GithubIcon, LinkedinIcon, LeetCodeIcon, CodeforcesIcon } from './Icons';
 import type { Profile } from '../types';
 
 interface HeroProps {
@@ -18,6 +19,8 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ profile, onOpenResume, onOpenTerminal }) => {
+  const [copied, setCopied] = useState(false);
+
   const stats = profile?.stats || {
     projects_completed: 8,
     cgpa: '8.07',
@@ -34,127 +37,117 @@ export const Hero: React.FC<HeroProps> = ({ profile, onOpenResume, onOpenTermina
     email: 'manish.iitm484@gmail.com',
   };
 
-  return (
-    <section id="home" className="relative min-h-[92vh] pt-32 pb-16 flex items-center justify-center overflow-hidden">
-      {/* Ambient background soft pastel glow orbs for elegant light theme */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-indigo-200/40 via-sky-200/40 to-purple-200/30 blur-[130px] rounded-full pointer-events-none -z-10 animate-glow" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-100/60 blur-[120px] rounded-full pointer-events-none -z-10" />
-      
-      {/* Background Subtle Light Grid */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-60 pointer-events-none -z-10" />
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(socials.email);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center relative z-10">
+  return (
+    <section id="home" className="relative min-h-[88vh] pt-32 pb-16 flex items-center justify-center overflow-hidden">
+      {/* Subtle, natural lighting mesh */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-indigo-100/50 via-sky-100/40 to-slate-100/30 blur-[100px] rounded-full pointer-events-none -z-10" />
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center relative z-10">
         
-        {/* PROMINENT PROFILE PICTURE / MK MONOGRAM AVATAR */}
+        {/* Profile Avatar / AI Developer Avatar */}
         <div className="flex justify-center mb-6">
           <div className="relative group">
-            {/* Ambient Avatar Glow */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-purple-500 rounded-full blur-md opacity-40 group-hover:opacity-75 transition duration-500"></div>
-            
-            {/* Avatar Container */}
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full p-[3px] bg-gradient-to-tr from-indigo-600 via-sky-500 to-cyan-400 shadow-xl shadow-indigo-500/15 flex items-center justify-center animate-float">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-[2.5px] bg-gradient-to-tr from-slate-300 via-indigo-500 to-sky-400 shadow-md flex items-center justify-center transition-transform hover:scale-105">
               <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-indigo-50 via-white to-sky-50 flex flex-col items-center justify-center select-none">
-                    <span className="font-heading font-black text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-tr from-indigo-700 via-indigo-600 to-cyan-600 tracking-wider">
-                      MK
-                    </span>
-                    <span className="text-[9px] font-mono font-bold text-indigo-500 tracking-widest uppercase mt-0.5">
-                      IIT MANDI
-                    </span>
-                  </div>
-                )}
+                <img
+                  src={profile?.avatar_url || '/avatar.jpg'}
+                  alt={profile?.name || 'Manish Kumar'}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to /avatar.jpg if path error
+                    (e.target as HTMLImageElement).src = '/avatar.jpg';
+                  }}
+                />
               </div>
 
-              {/* Status indicator on avatar */}
+              {/* Status pulse */}
               <span
-                className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-md"
-                title="Active & Available for opportunities"
+                className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-sm"
+                title="Available for hire & research"
               >
-                <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
               </span>
             </div>
           </div>
         </div>
 
-        {/* Availability Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-slate-200 shadow-sm backdrop-blur-md mb-6">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        {/* Status Pill */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-slate-200 shadow-xs mb-5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-xs font-mono text-slate-700 font-medium">
+            IIT Mandi EE '27 • Open to Opportunities
           </span>
-          <span className="text-xs font-mono text-indigo-700 tracking-wide uppercase font-bold">
-            {profile?.available_for_hire ? 'Available for New Opportunities' : 'Currently Building'}
-          </span>
-          <span className="text-slate-300">|</span>
-          <span className="text-xs text-slate-600 font-mono font-medium">IIT Mandi '27</span>
         </div>
 
-        {/* Hero Name */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-heading font-extrabold tracking-tight text-slate-900 mb-4 leading-[1.1]">
-          Hello, I'm{' '}
-          <span className="elegant-text-primary font-black">
-            {profile?.name || 'Manish Kumar'}
-          </span>
+        {/* Human, Crisp Headline */}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-heading font-extrabold tracking-tight text-slate-900 mb-4 leading-[1.15]">
+          Hi, I'm <span className="text-indigo-600 font-black">{profile?.name || 'Manish Kumar'}</span>.
         </h1>
 
-        {/* Subtitle / Role */}
-        <p className="text-lg sm:text-2xl text-slate-700 font-semibold max-w-3xl mx-auto mb-5 leading-relaxed">
-          <span className="elegant-text-accent">
-            {profile?.headline || 'Generative AI & Backend Systems Engineer'}
-          </span>
+        {/* Role & Core Focus */}
+        <p className="text-lg sm:text-xl text-slate-800 font-semibold max-w-3xl mx-auto mb-3 leading-relaxed">
+          {profile?.headline || 'Generative AI & Backend Systems Engineer'}
         </p>
 
-        {/* Tagline / Bio Summary */}
-        <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-9 font-normal leading-relaxed">
-          {profile?.tagline ||
-            'Crafting high-throughput FastAPI microservices, agentic AI pipelines & deep learning vision architectures.'}
+        {/* Narrative / Context */}
+        <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal">
+          {profile?.tagline || 'Crafting high-throughput FastAPI microservices, agentic AI pipelines & computer vision architectures.'}
         </p>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3.5 mb-12">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
           <a
             href="#projects"
-            className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 text-white font-semibold text-sm shadow-md shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm transition-all shadow-xs"
           >
-            <span>Explore Projects</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <span>View Selected Work</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </a>
 
           <button
             onClick={onOpenResume}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-slate-800 font-semibold text-sm border border-slate-300 hover:bg-slate-50 hover:border-indigo-500/50 hover:text-indigo-600 transition-all shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs sm:text-sm border border-slate-200 transition-all shadow-xs"
           >
-            <Download className="w-4 h-4 text-indigo-600" />
-            <span>Download Resume</span>
+            <Download className="w-3.5 h-3.5 text-slate-600" />
+            <span>Curriculum Vitae</span>
           </button>
 
-          <a
-            href="#contact"
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-50/80 text-indigo-700 font-semibold text-sm border border-indigo-100 hover:bg-indigo-100 transition-all"
+          <button
+            onClick={handleCopyEmail}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-mono text-xs border border-slate-200 transition-all shadow-xs"
+            title="Copy email address"
           >
-            <Mail className="w-4 h-4 text-indigo-600" />
-            <span>Contact Me</span>
-          </a>
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-emerald-700 font-semibold">Email Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-slate-400" />
+                <span>{socials.email}</span>
+              </>
+            )}
+          </button>
         </div>
 
-        {/* Social Links Row */}
-        <div className="flex items-center justify-center gap-3.5 mb-14 text-slate-600">
+        {/* Verified Social Profiles */}
+        <div className="flex items-center justify-center gap-3 mb-12 text-slate-600">
           {socials.github && (
             <a
               href={socials.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-500 hover:text-indigo-600 hover:-translate-y-1 transition-all shadow-sm"
+              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-900 transition-all shadow-xs"
               title="GitHub Profile"
             >
-              <GithubIcon className="w-5 h-5" />
+              <GithubIcon className="w-4 h-4" />
             </a>
           )}
           {socials.linkedin && (
@@ -162,10 +155,10 @@ export const Hero: React.FC<HeroProps> = ({ profile, onOpenResume, onOpenTermina
               href={socials.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-500 hover:text-indigo-600 hover:-translate-y-1 transition-all shadow-sm"
+              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-400 hover:text-indigo-600 transition-all shadow-xs"
               title="LinkedIn Profile"
             >
-              <LinkedinIcon className="w-5 h-5" />
+              <LinkedinIcon className="w-4 h-4" />
             </a>
           )}
           {socials.leetcode && (
@@ -173,27 +166,29 @@ export const Hero: React.FC<HeroProps> = ({ profile, onOpenResume, onOpenTermina
               href={socials.leetcode}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-amber-500 hover:text-amber-600 hover:-translate-y-1 transition-all shadow-sm"
+              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 transition-all shadow-xs"
               title="LeetCode Profile"
             >
-              <LeetCodeIcon className="w-5 h-5" />
+              <LeetCodeIcon className="w-4 h-4" />
             </a>
           )}
-          {socials.email && (
+          {socials.codeforces && (
             <a
-              href={`mailto:${socials.email}`}
-              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-rose-500 hover:text-rose-600 hover:-translate-y-1 transition-all shadow-sm"
-              title="Send Direct Email"
+              href={socials.codeforces}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-blue-400 transition-all shadow-xs"
+              title="Codeforces Profile"
             >
-              <Mail className="w-5 h-5" />
+              <CodeforcesIcon className="w-4 h-4" colored={true} />
             </a>
           )}
           <button
             onClick={onOpenTerminal}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 hover:-translate-y-1 transition-all font-mono text-xs font-semibold shadow-sm"
-            title="Launch Interactive Terminal"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-indigo-400 hover:text-indigo-600 transition-all font-mono text-xs font-semibold shadow-xs"
+            title="Open Developer Terminal"
           >
-            <Terminal className="w-4 h-4" />
+            <Terminal className="w-3.5 h-3.5" />
             <span>CLI</span>
           </button>
         </div>

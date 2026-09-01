@@ -69,6 +69,8 @@ class ProjectItem(BaseModel):
     demo_url: Optional[str] = ""
     featured: bool = True
     architecture: Optional[List[str]] = []
+    architecture_image_url: Optional[str] = ""
+    results_image_url: Optional[str] = ""
     created_date: Optional[str] = ""
 
 

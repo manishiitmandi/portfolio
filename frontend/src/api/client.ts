@@ -14,6 +14,12 @@ const API_BASE = '/api';
 
 export const apiClient = {
   // Public Endpoints
+  async getHealth(): Promise<{ status: string; database: string; database_latency_ms: number; environment: string }> {
+    const res = await fetch(`${API_BASE}/health`);
+    if (!res.ok) throw new Error('Health check failed');
+    return res.json();
+  },
+
   async getProfile(): Promise<Profile> {
     const res = await fetch(`${API_BASE}/profile`);
     if (!res.ok) throw new Error('Failed to fetch profile');
@@ -242,6 +248,21 @@ export const apiClient = {
       body: formData,
     });
     if (!res.ok) throw new Error('Failed to upload resume');
+    return res.json();
+  },
+
+  async uploadImage(file: File, token: string): Promise<{ success: boolean; image_url: string; message: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE}/admin/upload-image`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to upload image' }));
+      throw new Error(err.detail || 'Image upload failed');
+    }
     return res.json();
   },
 };

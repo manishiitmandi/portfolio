@@ -98,6 +98,8 @@ def get_projects(category: Optional[str] = Query(None), db: Session = Depends(ge
             "demo_url": p.demo_url or "",
             "featured": p.featured if p.featured is not None else True,
             "architecture": p.architecture or [],
+            "architecture_image_url": p.architecture_image_url or "",
+            "results_image_url": p.results_image_url or "",
             "created_date": p.created_date or "",
         }
         for p in items
@@ -129,6 +131,8 @@ def get_project_by_id(project_id: str, db: Session = Depends(get_db)):
         "demo_url": p.demo_url or "",
         "featured": p.featured if p.featured is not None else True,
         "architecture": p.architecture or [],
+        "architecture_image_url": p.architecture_image_url or "",
+        "results_image_url": p.results_image_url or "",
         "created_date": p.created_date or "",
     }
 

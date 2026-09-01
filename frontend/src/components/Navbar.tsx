@@ -59,16 +59,21 @@ export const Navbar: React.FC<NavbarProps> = ({
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Logo / Brand with prominent MK Monogram */}
+        {/* Logo / Brand with Profile Avatar */}
         <a
           href="#home"
           className="group flex items-center gap-3 text-slate-900 focus:outline-none"
         >
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 p-[2px] shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
-              <span className="font-heading font-black text-indigo-600 text-sm tracking-wider">
-                MK
-              </span>
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-sky-500 to-cyan-400 p-[2px] shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform flex items-center justify-center overflow-hidden">
+            <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center overflow-hidden">
+              <img
+                src={profile?.avatar_url || '/avatar.jpg'}
+                alt={profile?.name || 'Manish Kumar'}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/avatar.jpg';
+                }}
+              />
             </div>
           </div>
           <div className="flex flex-col">

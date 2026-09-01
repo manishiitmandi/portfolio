@@ -65,6 +65,8 @@ export interface ProjectItem {
   demo_url?: string;
   featured: boolean;
   architecture?: string[];
+  architecture_image_url?: string;
+  results_image_url?: string;
   created_date?: string;
 }
 

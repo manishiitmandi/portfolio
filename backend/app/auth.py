@@ -2,13 +2,10 @@ import os
 import time
 from datetime import datetime, timedelta
 from typing import Optional, Dict
+import bcrypt
 import jwt
 from fastapi import HTTPException, Security, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from passlib.context import CryptContext
-
-# Password hashing context using bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT Configuration
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "prod-super-secure-portfolio-jwt-secret-key-484-mk")
@@ -25,19 +22,30 @@ LOCKOUT_SECONDS = 300  # 5 minutes
 
 
 def hash_password(password: str) -> str:
-    """Hash a plaintext password with salted bcrypt."""
-    return pwd_context.hash(password)
+    """Hash a plaintext password with direct native bcrypt."""
+    # Bcrypt operates on bytes and supports up to 72 bytes
+    pwd_bytes = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify plaintext password against bcrypt hash, with fallback for initial migration."""
-    if not hashed_password:
+    """Verify plaintext password against bcrypt hash without passlib bugs."""
+    if not plain_password or not hashed_password:
         return False
-    # If already hashed with bcrypt
+
+    # Check if stored as bcrypt hash ($2b$ or $2a$)
     if hashed_password.startswith("$2b$") or hashed_password.startswith("$2a$"):
-        return pwd_context.verify(plain_password, hashed_password)
-    # Plaintext fallback for legacy/initial config, then upgrade
-    return plain_password == hashed_password
+        try:
+            pwd_bytes = plain_password.encode("utf-8")[:72]
+            hash_bytes = hashed_password.encode("utf-8")
+            return bcrypt.checkpw(pwd_bytes, hash_bytes)
+        except Exception:
+            return False
+
+    # Plaintext fallback for initial config, then upgrade to bcrypt
+    return plain_password.strip() == hashed_password.strip()
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

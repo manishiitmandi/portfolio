@@ -41,6 +41,8 @@ class ProjectModel(Base):
     demo_url = Column(String(500), default="")
     featured = Column(Boolean, default=True)
     architecture = Column(JSON, default=list)
+    architecture_image_url = Column(String(500), default="")
+    results_image_url = Column(String(500), default="")
     created_date = Column(String(50), default="")
 
 

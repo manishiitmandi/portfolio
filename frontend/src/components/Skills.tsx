@@ -63,7 +63,7 @@ export const Skills: React.FC<SkillsProps> = ({ skills }) => {
   return (
     <section id="skills" className="py-20 relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="flex flex-col items-center text-center mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-mono font-semibold mb-3">
@@ -84,11 +84,10 @@ export const Skills: React.FC<SkillsProps> = ({ skills }) => {
             <button
               key={idx}
               onClick={() => setActiveTab(idx)}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                activeTab === idx
+              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${activeTab === idx
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
                   : 'bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-slate-200 shadow-sm'
-              }`}
+                }`}
             >
               {category.category}
             </button>
