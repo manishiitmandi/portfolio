@@ -101,5 +101,5 @@ class AdminConfigModel(Base):
     __tablename__ = "admin_config"
 
     id = Column(Integer, primary_key=True)
-    admin_pin = Column(String(255), default="admin@484")
+    admin_pin = Column(String(255), default="")
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

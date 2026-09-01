@@ -31,7 +31,7 @@ def seed_database_if_empty(db: Session):
             data = {}
 
     # Seed Admin Config
-    default_pin = os.getenv("ADMIN_PIN", "admin@484")
+    default_pin = os.getenv("ADMIN_PIN", "")
     if ADMIN_CONFIG_PATH.exists():
         try:
             with open(ADMIN_CONFIG_PATH, "r", encoding="utf-8") as f:

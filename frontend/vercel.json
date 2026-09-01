@@ -1,14 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://manish-portfolio-api-j8jt.onrender.com/api/:path*"
-    },
-    {
-      "source": "/static/:path*",
-      "destination": "https://manish-portfolio-api-j8jt.onrender.com/static/:path*"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

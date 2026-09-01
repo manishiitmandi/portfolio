@@ -48,16 +48,10 @@ def admin_login(req: AdminLoginRequest, request: Request, db: Session = Depends(
     check_rate_limit(request)
 
     admin_cfg = db.query(AdminConfigModel).first()
-    stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "admin@484")
-    env_pin = os.getenv("ADMIN_PIN", "admin@484")
+    stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "")
     
-    # 2. Verify password with bcrypt, env fallback, or master key
-    is_valid = (
-        verify_password(req.pin.strip(), stored_pin) 
-        or (req.pin.strip() == env_pin.strip())
-        or (req.pin.strip() == "admin@484")
-    )
-    if not is_valid:
+    # 2. Verify password with native bcrypt against stored hash
+    if not verify_password(req.pin.strip(), stored_pin):
         register_failed_attempt(request)
         raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
@@ -92,7 +86,7 @@ def change_admin_password(
         raise HTTPException(status_code=400, detail="New password must be at least 4 characters long")
     
     admin_cfg = db.query(AdminConfigModel).first()
-    stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "admin@484")
+    stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "")
     
     if not verify_password(current_pin, stored_pin):
         raise HTTPException(status_code=401, detail="Current password does not match")
