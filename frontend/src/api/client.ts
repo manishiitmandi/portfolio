@@ -10,19 +10,27 @@ import type {
   TerminalCommandResponse,
 } from '../types';
 
-const PROD_BACKEND_URL = 'https://manish-portfolio-api-j8jt.onrender.com';
+const DEFAULT_PROD_URL = 'https://manish-portfolio-api-j8jt.onrender.com';
 
-export const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
-  : import.meta.env.PROD
-    ? `${PROD_BACKEND_URL}/api`
-    : '/api';
+const getCleanApiBase = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    let clean = envUrl.trim().replace(/\/+$/, '');
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+  return import.meta.env.PROD ? `${DEFAULT_PROD_URL}/api` : '/api';
+};
 
-export const STATIC_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}`
-  : import.meta.env.PROD
-    ? PROD_BACKEND_URL
-    : '';
+const getCleanStaticBase = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    return envUrl.trim().replace(/\/+$/, '').replace(/\/api$/, '');
+  }
+  return import.meta.env.PROD ? DEFAULT_PROD_URL : '';
+};
+
+export const API_BASE = getCleanApiBase();
+export const STATIC_BASE = getCleanStaticBase();
 
 export const getFullAssetUrl = (url: string | undefined): string => {
   if (!url) return '';
