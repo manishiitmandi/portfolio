@@ -41,7 +41,6 @@ export const App: React.FC = () => {
   // Fetch all portfolio data strictly from database API
   const loadPortfolioData = async () => {
     try {
-      console.log('[Portfolio] Ingesting database endpoints via:', apiClient);
       const results = await Promise.allSettled([
         apiClient.getProfile(),
         apiClient.getSkills(),
@@ -50,21 +49,13 @@ export const App: React.FC = () => {
         apiClient.getEducation(),
       ]);
 
-      console.log('[Portfolio] Data Load Results:', {
-        profile: results[0],
-        skills: results[1],
-        projects: results[2],
-        experience: results[3],
-        education: results[4],
-      });
-
       if (results[0].status === 'fulfilled' && results[0].value) setProfile(results[0].value);
       if (results[1].status === 'fulfilled' && results[1].value) setSkills(results[1].value);
       if (results[2].status === 'fulfilled' && results[2].value) setProjects(results[2].value);
       if (results[3].status === 'fulfilled' && results[3].value) setExperience(results[3].value);
       if (results[4].status === 'fulfilled' && results[4].value) setEducation(results[4].value);
-    } catch (err: any) {
-      console.error('[Portfolio] Failed to load live database data:', err);
+    } catch {
+      // Handled gracefully without logging to client console
     } finally {
       setLoading(false);
     }
