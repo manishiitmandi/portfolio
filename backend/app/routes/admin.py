@@ -1,48 +1,37 @@
-import json
 import os
 import shutil
 import uuid
 from pathlib import Path
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Header, UploadFile, File, Form, Depends
+from fastapi import APIRouter, HTTPException, Header, UploadFile, File, Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.db_models import (
+    ProfileModel,
+    SkillCategoryModel,
+    ExperienceModel,
+    ProjectModel,
+    EducationModel,
+    ContactMessageModel,
+    AdminConfigModel,
+)
 from app.models.schemas import (
     Profile,
     SkillCategory,
     ExperienceItem,
     ProjectItem,
     EducationItem,
-    AchievementItem,
     AdminLoginRequest,
     AdminLoginResponse,
-    ContactMessage,
+    ChangePasswordRequest,
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
-DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "portfolio_data.json"
-MESSAGES_PATH = Path(__file__).resolve().parent.parent / "data" / "messages.json"
-CONFIG_PATH = Path(__file__).resolve().parent.parent / "data" / "admin_config.json"
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 STATIC_RESUME_PATH = STATIC_DIR / "resume.pdf"
 
-ACTIVE_TOKEN = "portfolio-admin-auth-token-key-2026"
-
-
-def get_admin_pin() -> str:
-    if CONFIG_PATH.exists():
-        try:
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-                cfg = json.load(f)
-                return cfg.get("admin_pin", "admin123")
-        except Exception:
-            pass
-    return os.getenv("ADMIN_PIN", "admin123")
-
-
-def set_admin_pin(new_pin: str):
-    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump({"admin_pin": new_pin}, f, indent=2)
+ACTIVE_TOKEN = os.getenv("ADMIN_TOKEN", "portfolio-admin-auth-token-key-2026")
 
 
 def verify_admin_token(authorization: Optional[str] = Header(None)):
@@ -54,24 +43,13 @@ def verify_admin_token(authorization: Optional[str] = Header(None)):
     return True
 
 
-def get_data() -> dict:
-    if not DATA_PATH.exists():
-        raise HTTPException(status_code=500, detail="Data file not found")
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def save_data(data: dict):
-    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(DATA_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-
-
 # --- Authentication ---
 @router.post("/login", response_model=AdminLoginResponse)
-def admin_login(req: AdminLoginRequest):
-    current_pin = get_admin_pin()
-    if req.pin.strip() == current_pin:
+def admin_login(req: AdminLoginRequest, db: Session = Depends(get_db)):
+    admin_cfg = db.query(AdminConfigModel).first()
+    stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "admin@484")
+    
+    if req.pin.strip() == stored_pin.strip():
         return AdminLoginResponse(
             success=True,
             token=ACTIVE_TOKEN,
@@ -81,19 +59,27 @@ def admin_login(req: AdminLoginRequest):
 
 
 @router.put("/change-password")
-def change_admin_password(req: dict, authorized: bool = Depends(verify_admin_token)):
-    current_pin = req.get("current_pin", "").strip()
-    new_pin = req.get("new_pin", "").strip()
+def change_admin_password(req: ChangePasswordRequest, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    current_pin = req.current_pin.strip()
+    new_pin = req.new_pin.strip()
     
     if not new_pin or len(new_pin) < 4:
         raise HTTPException(status_code=400, detail="New password must be at least 4 characters long")
     
-    actual_pin = get_admin_pin()
-    if current_pin != actual_pin:
+    admin_cfg = db.query(AdminConfigModel).first()
+    stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "admin@484")
+    
+    if current_pin != stored_pin:
         raise HTTPException(status_code=401, detail="Current password does not match")
     
-    set_admin_pin(new_pin)
-    return {"success": True, "message": "Admin password updated successfully"}
+    if not admin_cfg:
+        admin_cfg = AdminConfigModel(id=1, admin_pin=new_pin)
+        db.add(admin_cfg)
+    else:
+        admin_cfg.admin_pin = new_pin
+        
+    db.commit()
+    return {"success": True, "message": "Admin password updated successfully in database"}
 
 
 @router.get("/verify")
@@ -103,143 +89,175 @@ def verify_token(authorized: bool = Depends(verify_admin_token)):
 
 # --- Profile Management ---
 @router.put("/profile")
-def update_profile(profile: Profile, authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    data["profile"] = profile.dict()
-    save_data(data)
-    return {"success": True, "message": "Profile updated successfully", "profile": profile}
+def update_profile(profile: Profile, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    p = db.query(ProfileModel).first()
+    if not p:
+        p = ProfileModel()
+        db.add(p)
+
+    p.name = profile.name
+    p.headline = profile.headline
+    p.tagline = profile.tagline
+    p.bio = profile.bio
+    p.location = profile.location
+    p.available_for_hire = profile.available_for_hire
+    p.avatar_url = profile.avatar_url or ""
+    p.socials = profile.socials.dict()
+    p.stats = profile.stats.dict()
+
+    db.commit()
+    return {"success": True, "message": "Profile updated in database", "profile": profile}
 
 
 # --- Projects CRUD ---
 @router.post("/projects")
-def create_project(project: ProjectItem, authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    projects = data.get("projects", [])
-    if not project.id:
-        project.id = f"proj-{str(uuid.uuid4())[:8]}"
-    projects.insert(0, project.dict())
-    data["projects"] = projects
-    save_data(data)
-    return {"success": True, "message": "Project created successfully", "project": project}
+def create_project(project: ProjectItem, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    proj_id = project.id if project.id else f"proj-{str(uuid.uuid4())[:8]}"
+    db_proj = ProjectModel(
+        id=proj_id,
+        title=project.title,
+        category=project.category,
+        description=project.description,
+        full_description=project.full_description or "",
+        tags=project.tags,
+        metrics=project.metrics or "",
+        github_url=project.github_url or "",
+        demo_url=project.demo_url or "",
+        featured=project.featured,
+        architecture=project.architecture or [],
+        created_date=project.created_date or "",
+    )
+    db.add(db_proj)
+    db.commit()
+    return {"success": True, "message": "Project created in database", "project": project}
 
 
 @router.put("/projects/{project_id}")
-def update_project(project_id: str, updated_project: ProjectItem, authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    projects = data.get("projects", [])
-    found = False
-    for i, p in enumerate(projects):
-        if p.get("id") == project_id:
-            updated_dict = updated_project.dict()
-            updated_dict["id"] = project_id
-            projects[i] = updated_dict
-            found = True
-            break
-    if not found:
+def update_project(project_id: str, updated_project: ProjectItem, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    p = db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
+    if not p:
         raise HTTPException(status_code=404, detail="Project not found")
-    data["projects"] = projects
-    save_data(data)
-    return {"success": True, "message": "Project updated successfully"}
+
+    p.title = updated_project.title
+    p.category = updated_project.category
+    p.description = updated_project.description
+    p.full_description = updated_project.full_description or ""
+    p.tags = updated_project.tags
+    p.metrics = updated_project.metrics or ""
+    p.github_url = updated_project.github_url or ""
+    p.demo_url = updated_project.demo_url or ""
+    p.featured = updated_project.featured
+    p.architecture = updated_project.architecture or []
+    p.created_date = updated_project.created_date or ""
+
+    db.commit()
+    return {"success": True, "message": "Project updated in database"}
 
 
 @router.delete("/projects/{project_id}")
-def delete_project(project_id: str, authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    projects = data.get("projects", [])
-    filtered = [p for p in projects if p.get("id") != project_id]
-    if len(filtered) == len(projects):
+def delete_project(project_id: str, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    p = db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
+    if not p:
         raise HTTPException(status_code=404, detail="Project not found")
-    data["projects"] = filtered
-    save_data(data)
-    return {"success": True, "message": "Project deleted successfully"}
+
+    db.delete(p)
+    db.commit()
+    return {"success": True, "message": "Project deleted from database"}
 
 
 # --- Skills Management ---
 @router.put("/skills")
-def update_skills(skills: List[SkillCategory], authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    data["skills"] = [s.dict() for s in skills]
-    save_data(data)
-    return {"success": True, "message": "Skills updated successfully", "skills": skills}
+def update_skills(skills: List[SkillCategory], db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    # Clear existing and replace with new skill categories
+    db.query(SkillCategoryModel).delete()
+    for cat in skills:
+        db_cat = SkillCategoryModel(
+            category=cat.category,
+            description=cat.description,
+            skills=[s.dict() for s in cat.skills],
+        )
+        db.add(db_cat)
+    db.commit()
+    return {"success": True, "message": "Skills updated in database", "skills": skills}
 
 
 # --- Experience Management ---
 @router.put("/experience")
-def update_experience(experience: List[ExperienceItem], authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    data["experience"] = [e.dict() for e in experience]
-    save_data(data)
-    return {"success": True, "message": "Experience updated successfully"}
-
-
-@router.post("/experience")
-def add_experience(item: ExperienceItem, authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    exps = data.get("experience", [])
-    if not item.id:
-        item.id = f"exp-{str(uuid.uuid4())[:8]}"
-    exps.insert(0, item.dict())
-    data["experience"] = exps
-    save_data(data)
-    return {"success": True, "message": "Experience added", "experience": item}
-
-
-@router.delete("/experience/{exp_id}")
-def delete_experience(exp_id: str, authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    exps = data.get("experience", [])
-    filtered = [e for e in exps if e.get("id") != exp_id]
-    data["experience"] = filtered
-    save_data(data)
-    return {"success": True, "message": "Experience deleted"}
+def update_experience(experience: List[ExperienceItem], db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    db.query(ExperienceModel).delete()
+    for e in experience:
+        db_e = ExperienceModel(
+            id=e.id or f"exp-{str(uuid.uuid4())[:8]}",
+            role=e.role,
+            company=e.company,
+            location=e.location,
+            period=e.period,
+            type=e.type,
+            highlights=e.highlights,
+            tech_stack=e.tech_stack,
+            current=e.current or False,
+        )
+        db.add(db_e)
+    db.commit()
+    return {"success": True, "message": "Experience updated in database"}
 
 
 # --- Education Management ---
 @router.put("/education")
-def update_education(education: List[EducationItem], authorized: bool = Depends(verify_admin_token)):
-    data = get_data()
-    data["education"] = [e.dict() for e in education]
-    save_data(data)
-    return {"success": True, "message": "Education updated successfully"}
+def update_education(education: List[EducationItem], db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    db.query(EducationModel).delete()
+    for ed in education:
+        db_ed = EducationModel(
+            id=ed.id or f"edu-{str(uuid.uuid4())[:8]}",
+            institution=ed.institution,
+            degree=ed.degree,
+            period=ed.period,
+            location=ed.location,
+            cgpa_or_grade=ed.cgpa_or_grade,
+            coursework=ed.coursework,
+            highlights=ed.highlights or [],
+        )
+        db.add(db_ed)
+    db.commit()
+    return {"success": True, "message": "Education updated in database"}
 
 
 # --- Contact Messages Management ---
 @router.get("/messages")
-def get_contact_messages(authorized: bool = Depends(verify_admin_token)):
-    if not MESSAGES_PATH.exists():
-        return []
-    try:
-        with open(MESSAGES_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return []
+def get_contact_messages(db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    msgs = db.query(ContactMessageModel).order_by(ContactMessageModel.created_at.desc()).all()
+    return [
+        {
+            "id": m.id,
+            "name": m.name,
+            "email": m.email,
+            "subject": m.subject,
+            "message": m.message,
+            "created_at": m.created_at.isoformat() + "Z" if m.created_at else None,
+            "is_read": m.is_read,
+        }
+        for m in msgs
+    ]
 
 
 @router.put("/messages/{msg_id}/read")
-def mark_message_as_read(msg_id: str, authorized: bool = Depends(verify_admin_token)):
-    if not MESSAGES_PATH.exists():
-        raise HTTPException(status_code=404, detail="Messages not found")
-    with open(MESSAGES_PATH, "r", encoding="utf-8") as f:
-        messages = json.load(f)
-    for m in messages:
-        if m.get("id") == msg_id:
-            m["is_read"] = True
-            break
-    with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
-        json.dump(messages, f, indent=2)
+def mark_message_as_read(msg_id: str, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    m = db.query(ContactMessageModel).filter(ContactMessageModel.id == msg_id).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Message not found")
+    m.is_read = True
+    db.commit()
     return {"success": True, "message": "Message marked as read"}
 
 
 @router.delete("/messages/{msg_id}")
-def delete_message(msg_id: str, authorized: bool = Depends(verify_admin_token)):
-    if not MESSAGES_PATH.exists():
-        raise HTTPException(status_code=404, detail="Messages not found")
-    with open(MESSAGES_PATH, "r", encoding="utf-8") as f:
-        messages = json.load(f)
-    filtered = [m for m in messages if m.get("id") != msg_id]
-    with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
-        json.dump(filtered, f, indent=2)
-    return {"success": True, "message": "Message deleted successfully"}
+def delete_message(msg_id: str, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+    m = db.query(ContactMessageModel).filter(ContactMessageModel.id == msg_id).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Message not found")
+    db.delete(m)
+    db.commit()
+    return {"success": True, "message": "Message deleted from database"}
 
 
 # --- Resume Upload ---

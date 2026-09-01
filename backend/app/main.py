@@ -2,11 +2,20 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from app.database import engine, Base, SessionLocal
+from app.database_seeder import seed_database_if_empty
 from app.routes import portfolio, contact, admin
+
+# Create tables in the configured database (SQLite / PostgreSQL)
+Base.metadata.create_all(bind=engine)
+
+# Seed initial database records
+with SessionLocal() as db_session:
+    seed_database_if_empty(db_session)
 
 app = FastAPI(
     title="Manish Kumar - Dynamic Portfolio API",
-    description="High-performance FastAPI backend supporting dynamic portfolio content, admin live editing, and message queues.",
+    description="High-performance FastAPI backend supporting dynamic database storage (SQLite / PostgreSQL), admin live editing, and contact message persistence.",
     version="1.0.0",
 )
 
