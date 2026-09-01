@@ -19,6 +19,7 @@ venv.bak/
 # Environment Variables & IDEs
 .env
 .env.*
+!frontend/.env.production
 .vscode/
 .idea/
 .DS_Store
