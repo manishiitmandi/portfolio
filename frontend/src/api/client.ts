@@ -11,8 +11,11 @@ import type {
 } from '../types';
 
 const getCleanApiBase = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+  let envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string') {
+    if (envUrl.includes('manish-portfolio-api.onrender.com') && !envUrl.includes('-j8jt')) {
+      envUrl = envUrl.replace('manish-portfolio-api.onrender.com', 'manish-portfolio-api-j8jt.onrender.com');
+    }
     let clean = envUrl.trim().replace(/\/+$/, '');
     return clean.endsWith('/api') ? clean : `${clean}/api`;
   }
@@ -20,8 +23,11 @@ const getCleanApiBase = (): string => {
 };
 
 const getCleanStaticBase = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+  let envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string') {
+    if (envUrl.includes('manish-portfolio-api.onrender.com') && !envUrl.includes('-j8jt')) {
+      envUrl = envUrl.replace('manish-portfolio-api.onrender.com', 'manish-portfolio-api-j8jt.onrender.com');
+    }
     return envUrl.trim().replace(/\/+$/, '').replace(/\/api$/, '');
   }
   return '';
