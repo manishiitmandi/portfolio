@@ -102,6 +102,22 @@ export const apiClient = {
     return res.json();
   },
 
+  async changeAdminPassword(current_pin: string, new_pin: string, token: string) {
+    const res = await fetch(`${API_BASE}/admin/change-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ current_pin, new_pin }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to change password' }));
+      throw new Error(err.detail || 'Failed to update admin password');
+    }
+    return res.json();
+  },
+
   async updateProfile(profile: Profile, token: string) {
     const res = await fetch(`${API_BASE}/admin/profile`, {
       method: 'PUT',

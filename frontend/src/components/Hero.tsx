@@ -7,7 +7,6 @@ import {
   Cpu,
   Award,
   Zap,
-  Sparkles,
 } from 'lucide-react';
 import { GithubIcon, LinkedinIcon, LeetCodeIcon } from './Icons';
 import type { Profile } from '../types';
@@ -199,8 +198,8 @@ export const Hero: React.FC<HeroProps> = ({ profile, onOpenResume, onOpenTermina
           </button>
         </div>
 
-        {/* Dynamic Key Stats Bar - Light Theme */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+        {/* Dynamic Key Stats Bar - 3 Columns (CGPA removed) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto">
           <div className="glass-card p-5 rounded-2xl text-center">
             <div className="flex items-center justify-center gap-1.5 text-indigo-600 mb-1">
               <Cpu className="w-4 h-4" />
@@ -209,16 +208,6 @@ export const Hero: React.FC<HeroProps> = ({ profile, onOpenResume, onOpenTermina
               </span>
             </div>
             <span className="text-xs text-slate-500 font-semibold">Engineered Projects</span>
-          </div>
-
-          <div className="glass-card p-5 rounded-2xl text-center">
-            <div className="flex items-center justify-center gap-1.5 text-sky-600 mb-1">
-              <Sparkles className="w-4 h-4" />
-              <span className="font-heading font-black text-2xl sm:text-3xl text-slate-900">
-                {stats.cgpa}
-              </span>
-            </div>
-            <span className="text-xs text-slate-500 font-semibold">IIT Mandi CGPA</span>
           </div>
 
           <div className="glass-card p-5 rounded-2xl text-center">

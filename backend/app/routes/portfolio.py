@@ -212,7 +212,7 @@ def execute_terminal_command(req: TerminalCommandRequest):
         return TerminalCommandResponse(output=output)
 
     if cmd in ["admin", "login"]:
-        output = "Click the 'Admin Studio' key icon in the navigation bar to open the Admin Panel (Default PIN: admin123)."
+        output = "Click the 'Admin' button in the navigation bar or press Ctrl+Shift+A to open the Admin Studio."
         return TerminalCommandResponse(output=output)
 
     return TerminalCommandResponse(

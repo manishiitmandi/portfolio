@@ -21,12 +21,28 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "portfolio_data.json"
 MESSAGES_PATH = Path(__file__).resolve().parent.parent / "data" / "messages.json"
+CONFIG_PATH = Path(__file__).resolve().parent.parent / "data" / "admin_config.json"
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 STATIC_RESUME_PATH = STATIC_DIR / "resume.pdf"
 
-# Default Admin PIN / Secret (User can update or pass custom)
-ADMIN_SECRET_PIN = os.getenv("ADMIN_PIN", "admin123")
 ACTIVE_TOKEN = "portfolio-admin-auth-token-key-2026"
+
+
+def get_admin_pin() -> str:
+    if CONFIG_PATH.exists():
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+                return cfg.get("admin_pin", "admin123")
+        except Exception:
+            pass
+    return os.getenv("ADMIN_PIN", "admin123")
+
+
+def set_admin_pin(new_pin: str):
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump({"admin_pin": new_pin}, f, indent=2)
 
 
 def verify_admin_token(authorization: Optional[str] = Header(None)):
@@ -54,13 +70,30 @@ def save_data(data: dict):
 # --- Authentication ---
 @router.post("/login", response_model=AdminLoginResponse)
 def admin_login(req: AdminLoginRequest):
-    if req.pin.strip() == ADMIN_SECRET_PIN:
+    current_pin = get_admin_pin()
+    if req.pin.strip() == current_pin:
         return AdminLoginResponse(
             success=True,
             token=ACTIVE_TOKEN,
             message="Admin authentication successful",
         )
-    raise HTTPException(status_code=401, detail="Invalid admin PIN / password")
+    raise HTTPException(status_code=401, detail="Invalid admin password / PIN")
+
+
+@router.put("/change-password")
+def change_admin_password(req: dict, authorized: bool = Depends(verify_admin_token)):
+    current_pin = req.get("current_pin", "").strip()
+    new_pin = req.get("new_pin", "").strip()
+    
+    if not new_pin or len(new_pin) < 4:
+        raise HTTPException(status_code=400, detail="New password must be at least 4 characters long")
+    
+    actual_pin = get_admin_pin()
+    if current_pin != actual_pin:
+        raise HTTPException(status_code=401, detail="Current password does not match")
+    
+    set_admin_pin(new_pin)
+    return {"success": True, "message": "Admin password updated successfully"}
 
 
 @router.get("/verify")

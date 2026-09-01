@@ -75,7 +75,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-mono font-bold text-slate-600 mb-1.5 uppercase">
-              Admin PIN / Security Key
+              Admin Password / Security Key
             </label>
             <div className="relative">
               <input
@@ -84,14 +84,11 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClos
                 required
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                placeholder="Enter PIN (Default: admin123)"
+                placeholder="Enter admin password / PIN"
                 className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-amber-500 text-sm font-mono shadow-sm"
               />
               <Key className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
             </div>
-            <p className="text-[11px] text-slate-500 font-mono mt-1.5">
-              Default password is <code className="text-amber-700 font-bold bg-amber-50 px-1 py-0.5 rounded border border-amber-200">admin123</code>
-            </p>
           </div>
 
           <button

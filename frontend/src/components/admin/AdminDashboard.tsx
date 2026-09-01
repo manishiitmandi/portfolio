@@ -493,6 +493,58 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
+              {/* Security & Password Change */}
+              <div className="glass-panel p-6 rounded-2xl space-y-4 bg-white">
+                <h3 className="text-base font-heading font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+                  <span>Admin Security & Password</span>
+                  <span className="text-xs text-slate-500 font-mono">Private</span>
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-600 mb-1">Current Password</label>
+                    <input
+                      type="password"
+                      id="currPass"
+                      placeholder="Current password"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-sm font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-600 mb-1">New Password</label>
+                    <input
+                      type="password"
+                      id="newPass"
+                      placeholder="New password (min 4 chars)"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-sm font-mono"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const curr = (document.getElementById('currPass') as HTMLInputElement)?.value;
+                      const newP = (document.getElementById('newPass') as HTMLInputElement)?.value;
+                      if (!curr || !newP) {
+                        showToast('Please enter both current and new password', 'error');
+                        return;
+                      }
+                      try {
+                        await apiClient.changeAdminPassword(curr, newP, token);
+                        showToast('Admin password successfully updated!');
+                        (document.getElementById('currPass') as HTMLInputElement).value = '';
+                        (document.getElementById('newPass') as HTMLInputElement).value = '';
+                      } catch (err: any) {
+                        showToast(err.message || 'Failed to update password', 'error');
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors shadow-sm"
+                  >
+                    Update Admin Password
+                  </button>
+                </div>
+              </div>
+
               <div className="flex justify-end">
                 <button
                   onClick={handleSaveProfile}

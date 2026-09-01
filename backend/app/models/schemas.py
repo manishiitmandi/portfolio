@@ -122,6 +122,11 @@ class AdminLoginResponse(BaseModel):
     message: str
 
 
+class ChangePasswordRequest(BaseModel):
+    current_pin: str
+    new_pin: str
+
+
 class TerminalCommandRequest(BaseModel):
     command: str
 
