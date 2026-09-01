@@ -10,23 +10,32 @@ import type {
   TerminalCommandResponse,
 } from '../types';
 
-const DEFAULT_PROD_URL = 'https://manish-portfolio-api-j8jt.onrender.com';
+const CORRECT_RENDER_URL = 'https://manish-portfolio-api-j8jt.onrender.com';
 
 const getCleanApiBase = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL;
+  let envUrl = import.meta.env.VITE_API_URL;
+  // Auto-correct old/typo url if present in Vercel environment variables
+  if (envUrl && typeof envUrl === 'string' && envUrl.includes('manish-portfolio-api.onrender.com')) {
+    envUrl = envUrl.replace('manish-portfolio-api.onrender.com', 'manish-portfolio-api-j8jt.onrender.com');
+  }
+
   if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
     let clean = envUrl.trim().replace(/\/+$/, '');
     return clean.endsWith('/api') ? clean : `${clean}/api`;
   }
-  return import.meta.env.PROD ? `${DEFAULT_PROD_URL}/api` : '/api';
+  return import.meta.env.PROD ? `${CORRECT_RENDER_URL}/api` : '/api';
 };
 
 const getCleanStaticBase = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL;
+  let envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.includes('manish-portfolio-api.onrender.com')) {
+    envUrl = envUrl.replace('manish-portfolio-api.onrender.com', 'manish-portfolio-api-j8jt.onrender.com');
+  }
+
   if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
     return envUrl.trim().replace(/\/+$/, '').replace(/\/api$/, '');
   }
-  return import.meta.env.PROD ? DEFAULT_PROD_URL : '';
+  return import.meta.env.PROD ? CORRECT_RENDER_URL : '';
 };
 
 export const API_BASE = getCleanApiBase();
