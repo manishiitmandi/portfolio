@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables & IDEs
+.env
+.env.*
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Vite
+.vite/

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1fd2a59c-1082-4f1b-b3e3-d98374fa9fad",
+    "name": "Alex",
+    "email": "alex@example.com",
+    "subject": "Portfolio Inquiry / Collaboration",
+    "message": "Great portfolio! Let's collaborate on Generative AI",
+    "created_at": "2026-09-01T07:05:35.318674Z",
+    "is_read": false
+  }
+]

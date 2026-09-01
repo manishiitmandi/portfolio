@@ -1,0 +1,376 @@
+{
+  "profile": {
+    "name": "Manish Kumar",
+    "headline": "Generative AI & Backend Systems Engineer",
+    "tagline": "Crafting high-throughput FastAPI microservices, agentic AI pipelines & computer vision architectures.",
+    "bio": "Electrical Engineering undergraduate at IIT Mandi with hands-on industry experience in Generative AI, LLM multi-agent orchestration, speech/lip-sync data pipelines, and medical image segmentation. Passionate about building robust, high-performance backends and cutting-edge deep learning systems.",
+    "location": "Himachal Pradesh / Indore, India",
+    "available_for_hire": true,
+    "avatar_url": "",
+    "socials": {
+      "github": "https://github.com/manishiitmandi",
+      "linkedin": "https://www.linkedin.com/in/manish-kumar-0067a42a0/",
+      "leetcode": "https://leetcode.com/manish_iitm",
+      "codeforces": "https://codeforces.com/profile/manish_iitm",
+      "email": "manish.iitm484@gmail.com",
+      "phone": "+91 9872095834",
+      "twitter": ""
+    },
+    "stats": {
+      "projects_completed": 8,
+      "cgpa": "8.07 / 10",
+      "years_experience": "1+",
+      "hackathons_won": 2,
+      "contributions": "650+"
+    }
+  },
+  "skills": [
+    {
+      "category": "AI / ML & Generative AI",
+      "description": "Deep learning architectures, LLM orchestration, and multimodal data pipelines.",
+      "skills": [
+        {
+          "name": "PyTorch",
+          "level": 92,
+          "icon": "Flame",
+          "highlight": true
+        },
+        {
+          "name": "LangChain & AI Agents",
+          "level": 90,
+          "icon": "Bot",
+          "highlight": true
+        },
+        {
+          "name": "Generative AI & LLMs",
+          "level": 94,
+          "icon": "Sparkles",
+          "highlight": true
+        },
+        {
+          "name": "Prompt Engineering",
+          "level": 88,
+          "icon": "Terminal",
+          "highlight": false
+        },
+        {
+          "name": "Whisper ASR & Audio Pipelines",
+          "level": 85,
+          "icon": "Mic",
+          "highlight": false
+        },
+        {
+          "name": "MediaPipe & Computer Vision",
+          "level": 86,
+          "icon": "Eye",
+          "highlight": false
+        },
+        {
+          "name": "Graph Neural Networks (GNN)",
+          "level": 82,
+          "icon": "Network",
+          "highlight": true
+        }
+      ]
+    },
+    {
+      "category": "Backend & Cloud Architecture",
+      "description": "High-concurrency microservices, asynchronous task queues, and resilient databases.",
+      "skills": [
+        {
+          "name": "FastAPI",
+          "level": 95,
+          "icon": "Zap",
+          "highlight": true
+        },
+        {
+          "name": "REST APIs & Pydantic",
+          "level": 92,
+          "icon": "ShieldCheck",
+          "highlight": true
+        },
+        {
+          "name": "PostgreSQL & Alembic",
+          "level": 87,
+          "icon": "Database",
+          "highlight": true
+        },
+        {
+          "name": "Docker & Docker Compose",
+          "level": 88,
+          "icon": "Container",
+          "highlight": true
+        },
+        {
+          "name": "Event-Driven & CloudEvents",
+          "level": 84,
+          "icon": "Cpu",
+          "highlight": false
+        },
+        {
+          "name": "Microservices & Asynchronous Tasks",
+          "level": 86,
+          "icon": "Workflow",
+          "highlight": false
+        }
+      ]
+    },
+    {
+      "category": "Programming Languages",
+      "description": "Core languages for high-performance computing, scripting, and system design.",
+      "skills": [
+        {
+          "name": "Python",
+          "level": 95,
+          "icon": "Code2",
+          "highlight": true
+        },
+        {
+          "name": "C++",
+          "level": 88,
+          "icon": "FileCode",
+          "highlight": true
+        },
+        {
+          "name": "TypeScript / JavaScript",
+          "level": 82,
+          "icon": "Braces",
+          "highlight": false
+        },
+        {
+          "name": "SQL",
+          "level": 86,
+          "icon": "Database",
+          "highlight": false
+        }
+      ]
+    },
+    {
+      "category": "Tools, Media & Platforms",
+      "description": "DevOps, multimedia tooling, and interactive data visualization.",
+      "skills": [
+        {
+          "name": "Git & GitHub",
+          "level": 92,
+          "icon": "GitBranch",
+          "highlight": true
+        },
+        {
+          "name": "FFmpeg Video Processing",
+          "level": 85,
+          "icon": "Video",
+          "highlight": false
+        },
+        {
+          "name": "Streamlit & Leafmap",
+          "level": 88,
+          "icon": "Layers",
+          "highlight": false
+        },
+        {
+          "name": "Linux / Bash Shell",
+          "level": 86,
+          "icon": "TerminalSquare",
+          "highlight": false
+        }
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "role": "Software Engineering Intern \u2013 Generative AI",
+      "company": "Zangoh (Newzera Tech Labs Pvt. Ltd.)",
+      "location": "Indore, India",
+      "period": "January 2026 \u2013 July 2026",
+      "type": "Internship",
+      "current": true,
+      "highlights": [
+        "Developed Python/FastAPI backend services and asynchronous REST APIs for Generative AI applications with rigorous Pydantic validation.",
+        "Engineered speech and lip-sync data pipelines integrating audio ingestion, shot segmentation, MediaPipe landmark extraction, Whisper ASR, phoneme mapping, and automated quality filtering.",
+        "Contributed to LLM-powered AI Avatar and multi-agent systems using LangChain, custom prompt engineering, and agent orchestration for context-aware conversational workflows.",
+        "Worked with PostgreSQL, Alembic, Docker, and CloudEvents in event-driven microservices across Zangoh Studio, Zangoh ASR, and Video Platform."
+      ],
+      "tech_stack": [
+        "FastAPI",
+        "Python",
+        "LangChain",
+        "PyTorch",
+        "Whisper ASR",
+        "MediaPipe",
+        "PostgreSQL",
+        "Docker",
+        "CloudEvents"
+      ]
+    },
+    {
+      "id": "exp-2",
+      "role": "Core Team Member & Event Lead",
+      "company": "STAC (Space Technology & Astronomy Club), IIT Mandi",
+      "location": "Himachal Pradesh, India",
+      "period": "2024 \u2013 Present",
+      "type": "Leadership",
+      "current": true,
+      "highlights": [
+        "Coordinated hackathons and technical symposiums on National Space Day 2024 with 200+ participants.",
+        "Mentored junior cohorts in Python for scientific computing, astronomy data analysis, and open-source tooling."
+      ],
+      "tech_stack": [
+        "Python",
+        "Event Coordination",
+        "Technical Mentorship",
+        "Data Analysis"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-1",
+      "title": "Graph-Based Neural Cellular Automata for Medical Image Segmentation",
+      "category": "AI / Medical Imaging",
+      "description": "Novel hybrid architecture combining Vision GNN (ViG-UNet) and Med-NCA for high-resolution 2D medical image segmentation.",
+      "full_description": "Designed an innovative medical segmentation network pairing Graph Neural Networks with Cellular Automata. Integrated multi-resolution NCA for memory-efficient processing and patch-wise refinement, surpassing previous state-of-the-art benchmarks on clinical segmentation datasets.",
+      "tags": [
+        "Python",
+        "PyTorch",
+        "GNN",
+        "ViG-UNet",
+        "Neural Cellular Automata",
+        "Medical Imaging"
+      ],
+      "metrics": "Dice Score: 0.84 (vs MedNCA benchmark 0.81)",
+      "github_url": "https://github.com/manish484",
+      "demo_url": "",
+      "featured": true,
+      "architecture": [
+        "Stage 1: Vision Graph Neural Network (ViG) graph node clustering for global anatomical representation",
+        "Stage 2: Multi-resolution Neural Cellular Automata (Med-NCA) local patch refinement",
+        "Loss: Combined Dice + Focal Loss with multi-scale deep supervision"
+      ],
+      "created_date": "Feb 2025"
+    },
+    {
+      "id": "proj-2",
+      "title": "VesselNet: Scleral Vein Segmentation for Health Monitoring",
+      "category": "Computer Vision / Health",
+      "description": "Two-stage deep learning pipeline combining U-Net scleral isolation and SegNet vascular segmentation with FastAPI inference service.",
+      "full_description": "Engineered an end-to-end vascular health analysis suite. Implemented CLAHE image preprocessing, morphological post-processing for vein continuity, and quantitative feature extraction for vein tortuosity, width, and branching density.",
+      "tags": [
+        "Python",
+        "PyTorch",
+        "FastAPI",
+        "Computer Vision",
+        "U-Net",
+        "SegNet",
+        "CLAHE"
+      ],
+      "metrics": "High-fidelity micro-vascular extraction & tortuosity scoring",
+      "github_url": "https://github.com/manish484",
+      "demo_url": "",
+      "featured": true,
+      "architecture": [
+        "Stage 1: U-Net for precise scleral eye region masking",
+        "Stage 2: SegNet for micro-vein semantic segmentation",
+        "Post-processing: CLAHE adaptive contrast + skeletonization morphological filters",
+        "API: FastAPI async microservice for batch image processing"
+      ],
+      "created_date": "May 2025"
+    },
+    {
+      "id": "proj-3",
+      "title": "FieldWise: Geospatial Agricultural Monitoring Platform",
+      "category": "Geospatial & LLM",
+      "description": "Satellite imagery analytics platform using Sentinel data, Leafmap interactive GIS, and Google Gemini API for regional crop insights.",
+      "full_description": "Built a comprehensive agricultural dashboard using Sentinel satellite feeds. Calculates NDVI (Normalized Difference Vegetation Index), surface moisture levels, and vegetation health indices, with Gemini AI generating customized agronomist advisory reports.",
+      "tags": [
+        "Python",
+        "Streamlit",
+        "Leafmap",
+        "Sentinel-2",
+        "Gemini API",
+        "NDVI GIS",
+        "Geospatial"
+      ],
+      "metrics": "Live GIS mapping + Automated AI crop advisory generation",
+      "github_url": "https://github.com/manish484",
+      "demo_url": "https://fieldwise.streamlit.app",
+      "featured": true,
+      "architecture": [
+        "Sentinel-2 multispectral band ingestion",
+        "NDVI computation & false-color infrared spectral analysis",
+        "Interactive polygon boundary selection via Leafmap",
+        "Gemini 1.5 Pro integration for context-aware soil & weather analysis"
+      ],
+      "created_date": "Nov 2024"
+    },
+    {
+      "id": "proj-4",
+      "title": "Agentic AI Multimodal Avatar & Lip-Sync Pipeline",
+      "category": "Generative AI",
+      "description": "End-to-end multi-agent orchestration service with Whisper ASR, phoneme alignment, and face mesh synthesis.",
+      "full_description": "Built an asynchronous pipeline converting speech inputs into synchronized conversational agent video streams. Orchestrated with LangChain, FastAPI task workers, and real-time landmark extraction.",
+      "tags": [
+        "FastAPI",
+        "LangChain",
+        "Whisper ASR",
+        "MediaPipe",
+        "Docker",
+        "CloudEvents"
+      ],
+      "metrics": "Sub-second speech-to-intent latency & automated quality scoring",
+      "github_url": "https://github.com/manish484",
+      "demo_url": "",
+      "featured": true,
+      "architecture": [
+        "Audio ingestion & Whisper speech-to-phoneme alignment",
+        "MediaPipe face mesh 468-landmark tracker",
+        "LangChain agent tool calling & response generation",
+        "FastAPI async event broker"
+      ],
+      "created_date": "2026"
+    }
+  ],
+  "education": [
+    {
+      "id": "edu-1",
+      "institution": "Indian Institute of Technology (IIT) Mandi",
+      "degree": "Bachelor of Technology in Electrical Engineering",
+      "period": "August 2023 \u2013 May 2027",
+      "location": "Himachal Pradesh, India",
+      "cgpa_or_grade": "CGPA: 8.07 / 10.00",
+      "coursework": [
+        "Data Structures and Algorithms",
+        "Introduction to Data Science",
+        "Probability and Statistics",
+        "Machine Learning",
+        "Deep Learning and Applications",
+        "Signals and Systems",
+        "Computer Networks"
+      ],
+      "highlights": [
+        "Active member of STAC technical club",
+        "Secured top ranks in competitive hackathons"
+      ]
+    }
+  ],
+  "achievements": [
+    {
+      "id": "ach-1",
+      "title": "4th Position (40+ Teams)",
+      "event": "NASA SpaceApp Challenge Hackathon",
+      "rank": "Finalist / 4th Place",
+      "year": "2024",
+      "description": "Engineered space data analytics solution evaluated among 40+ competitive university teams at PEC Chandigarh.",
+      "link": ""
+    },
+    {
+      "id": "ach-2",
+      "title": "3rd Position",
+      "event": "Astrotape Hackathon",
+      "rank": "3rd Place",
+      "year": "2024",
+      "description": "Built an astronomical data classification and orbital tracking tool in intra-college hackathon by STAC IIT Mandi.",
+      "link": ""
+    }
+  ]
+}
