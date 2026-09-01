@@ -20,21 +20,14 @@ import type {
   EducationItem,
 } from './types';
 
-import {
-  fallbackProfile,
-  fallbackProjects,
-  fallbackSkills,
-  fallbackExperience,
-  fallbackEducation,
-} from './data/fallbackData';
-
 export const App: React.FC = () => {
-  // State for data initialized with fallback data for 100% uptime
-  const [profile, setProfile] = useState<Profile>(fallbackProfile);
-  const [skills, setSkills] = useState<SkillCategory[]>(fallbackSkills);
-  const [projects, setProjects] = useState<ProjectItem[]>(fallbackProjects);
-  const [experience, setExperience] = useState<ExperienceItem[]>(fallbackExperience);
-  const [education, setEducation] = useState<EducationItem[]>(fallbackEducation);
+  // Pure Live Database State
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [skills, setSkills] = useState<SkillCategory[]>([]);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [experience, setExperience] = useState<ExperienceItem[]>([]);
+  const [education, setEducation] = useState<EducationItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Modal states
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -45,7 +38,7 @@ export const App: React.FC = () => {
     return localStorage.getItem('portfolio_admin_token');
   });
 
-  // Fetch all portfolio data
+  // Fetch all portfolio data strictly from database API
   const loadPortfolioData = async () => {
     try {
       const [pData, sData, prData, eData, edData] = await Promise.all([
@@ -56,13 +49,15 @@ export const App: React.FC = () => {
         apiClient.getEducation(),
       ]);
 
-      if (pData) setProfile(pData);
-      if (sData && sData.length > 0) setSkills(sData);
-      if (prData && prData.length > 0) setProjects(prData);
-      if (eData && eData.length > 0) setExperience(eData);
-      if (edData && edData.length > 0) setEducation(edData);
+      setProfile(pData);
+      setSkills(sData);
+      setProjects(prData);
+      setExperience(eData);
+      setEducation(edData);
     } catch (err: any) {
-      console.warn('Backend cold-starting or connecting in background:', err.message);
+      console.error('Failed to load live database data:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,6 +100,20 @@ export const App: React.FC = () => {
     localStorage.removeItem('portfolio_admin_token');
     setIsAdminDashboardOpen(false);
   };
+
+  if (loading && !profile) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center gap-2 font-mono text-xs text-slate-600 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Connecting to Neon Cloud Database...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 relative selection:bg-indigo-500/20 selection:text-indigo-900">
