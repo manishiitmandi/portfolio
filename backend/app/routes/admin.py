@@ -2,10 +2,19 @@ import os
 import shutil
 import uuid
 from pathlib import Path
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Header, UploadFile, File, Depends
+from typing import List
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, Request
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.auth import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    verify_jwt_token,
+    check_rate_limit,
+    register_failed_attempt,
+    clear_failed_attempts,
+)
 from app.models.db_models import (
     ProfileModel,
     SkillCategoryModel,
@@ -31,35 +40,45 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 STATIC_RESUME_PATH = STATIC_DIR / "resume.pdf"
 
-ACTIVE_TOKEN = os.getenv("ADMIN_TOKEN", "portfolio-admin-auth-token-key-2026")
 
-
-def verify_admin_token(authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing authorization header")
-    token = authorization.replace("Bearer ", "").strip()
-    if token != ACTIVE_TOKEN:
-        raise HTTPException(status_code=403, detail="Invalid or expired admin token")
-    return True
-
-
-# --- Authentication ---
+# --- Authentication with Cryptographic JWT & Bcrypt ---
 @router.post("/login", response_model=AdminLoginResponse)
-def admin_login(req: AdminLoginRequest, db: Session = Depends(get_db)):
+def admin_login(req: AdminLoginRequest, request: Request, db: Session = Depends(get_db)):
+    # 1. Check brute force protection
+    check_rate_limit(request)
+
     admin_cfg = db.query(AdminConfigModel).first()
     stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "admin@484")
     
-    if req.pin.strip() == stored_pin.strip():
-        return AdminLoginResponse(
-            success=True,
-            token=ACTIVE_TOKEN,
-            message="Admin authentication successful",
-        )
-    raise HTTPException(status_code=401, detail="Invalid admin password / PIN")
+    # 2. Verify password with bcrypt (supports fallback and auto-upgrade)
+    if not verify_password(req.pin.strip(), stored_pin):
+        register_failed_attempt(request)
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+    # 3. Transparently upgrade to bcrypt if stored as plaintext
+    if admin_cfg and not (stored_pin.startswith("$2b$") or stored_pin.startswith("$2a$")):
+        admin_cfg.admin_pin = hash_password(req.pin.strip())
+        db.commit()
+
+    # 4. Clear any failed attempts for this client
+    clear_failed_attempts(request)
+
+    # 5. Issue cryptographic JWT token
+    token = create_access_token(data={"user": "admin", "role": "portfolio_owner"})
+
+    return AdminLoginResponse(
+        success=True,
+        token=token,
+        message="Cryptographic JWT session issued successfully",
+    )
 
 
 @router.put("/change-password")
-def change_admin_password(req: ChangePasswordRequest, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def change_admin_password(
+    req: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     current_pin = req.current_pin.strip()
     new_pin = req.new_pin.strip()
     
@@ -69,27 +88,34 @@ def change_admin_password(req: ChangePasswordRequest, db: Session = Depends(get_
     admin_cfg = db.query(AdminConfigModel).first()
     stored_pin = admin_cfg.admin_pin if admin_cfg else os.getenv("ADMIN_PIN", "admin@484")
     
-    if current_pin != stored_pin:
+    if not verify_password(current_pin, stored_pin):
         raise HTTPException(status_code=401, detail="Current password does not match")
     
+    # Hash new password with salted bcrypt
+    hashed_new_pin = hash_password(new_pin)
+    
     if not admin_cfg:
-        admin_cfg = AdminConfigModel(id=1, admin_pin=new_pin)
+        admin_cfg = AdminConfigModel(id=1, admin_pin=hashed_new_pin)
         db.add(admin_cfg)
     else:
-        admin_cfg.admin_pin = new_pin
+        admin_cfg.admin_pin = hashed_new_pin
         
     db.commit()
-    return {"success": True, "message": "Admin password updated successfully in database"}
+    return {"success": True, "message": "Admin password securely hashed with bcrypt and saved"}
 
 
 @router.get("/verify")
-def verify_token(authorized: bool = Depends(verify_admin_token)):
-    return {"valid": True, "message": "Admin session active"}
+def verify_token(admin_auth: dict = Depends(verify_jwt_token)):
+    return {"valid": True, "message": "Admin JWT token signature is verified"}
 
 
 # --- Profile Management ---
 @router.put("/profile")
-def update_profile(profile: Profile, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def update_profile(
+    profile: Profile,
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     p = db.query(ProfileModel).first()
     if not p:
         p = ProfileModel()
@@ -111,7 +137,11 @@ def update_profile(profile: Profile, db: Session = Depends(get_db), authorized: 
 
 # --- Projects CRUD ---
 @router.post("/projects")
-def create_project(project: ProjectItem, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def create_project(
+    project: ProjectItem,
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     proj_id = project.id if project.id else f"proj-{str(uuid.uuid4())[:8]}"
     db_proj = ProjectModel(
         id=proj_id,
@@ -133,7 +163,12 @@ def create_project(project: ProjectItem, db: Session = Depends(get_db), authoriz
 
 
 @router.put("/projects/{project_id}")
-def update_project(project_id: str, updated_project: ProjectItem, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def update_project(
+    project_id: str,
+    updated_project: ProjectItem,
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     p = db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -155,7 +190,11 @@ def update_project(project_id: str, updated_project: ProjectItem, db: Session = 
 
 
 @router.delete("/projects/{project_id}")
-def delete_project(project_id: str, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def delete_project(
+    project_id: str,
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     p = db.query(ProjectModel).filter(ProjectModel.id == project_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -167,8 +206,11 @@ def delete_project(project_id: str, db: Session = Depends(get_db), authorized: b
 
 # --- Skills Management ---
 @router.put("/skills")
-def update_skills(skills: List[SkillCategory], db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
-    # Clear existing and replace with new skill categories
+def update_skills(
+    skills: List[SkillCategory],
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     db.query(SkillCategoryModel).delete()
     for cat in skills:
         db_cat = SkillCategoryModel(
@@ -183,7 +225,11 @@ def update_skills(skills: List[SkillCategory], db: Session = Depends(get_db), au
 
 # --- Experience Management ---
 @router.put("/experience")
-def update_experience(experience: List[ExperienceItem], db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def update_experience(
+    experience: List[ExperienceItem],
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     db.query(ExperienceModel).delete()
     for e in experience:
         db_e = ExperienceModel(
@@ -204,7 +250,11 @@ def update_experience(experience: List[ExperienceItem], db: Session = Depends(ge
 
 # --- Education Management ---
 @router.put("/education")
-def update_education(education: List[EducationItem], db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def update_education(
+    education: List[EducationItem],
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     db.query(EducationModel).delete()
     for ed in education:
         db_ed = EducationModel(
@@ -224,7 +274,10 @@ def update_education(education: List[EducationItem], db: Session = Depends(get_d
 
 # --- Contact Messages Management ---
 @router.get("/messages")
-def get_contact_messages(db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def get_contact_messages(
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     msgs = db.query(ContactMessageModel).order_by(ContactMessageModel.created_at.desc()).all()
     return [
         {
@@ -241,7 +294,11 @@ def get_contact_messages(db: Session = Depends(get_db), authorized: bool = Depen
 
 
 @router.put("/messages/{msg_id}/read")
-def mark_message_as_read(msg_id: str, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def mark_message_as_read(
+    msg_id: str,
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     m = db.query(ContactMessageModel).filter(ContactMessageModel.id == msg_id).first()
     if not m:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -251,7 +308,11 @@ def mark_message_as_read(msg_id: str, db: Session = Depends(get_db), authorized:
 
 
 @router.delete("/messages/{msg_id}")
-def delete_message(msg_id: str, db: Session = Depends(get_db), authorized: bool = Depends(verify_admin_token)):
+def delete_message(
+    msg_id: str,
+    db: Session = Depends(get_db),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     m = db.query(ContactMessageModel).filter(ContactMessageModel.id == msg_id).first()
     if not m:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -262,7 +323,10 @@ def delete_message(msg_id: str, db: Session = Depends(get_db), authorized: bool 
 
 # --- Resume Upload ---
 @router.post("/resume/upload")
-async def upload_resume(file: UploadFile = File(...), authorized: bool = Depends(verify_admin_token)):
+async def upload_resume(
+    file: UploadFile = File(...),
+    admin_auth: dict = Depends(verify_jwt_token),
+):
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
     STATIC_DIR.mkdir(parents=True, exist_ok=True)
